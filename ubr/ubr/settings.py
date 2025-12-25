@@ -115,7 +115,7 @@ MEDIA_URL = '/media/'  # ADDED
 MEDIA_ROOT = BASE_DIR / 'media'  # ADDED
 
 # Custom User Model
-AUTH_USER_MODEL = 'myapp.User'  # ADDED: Use custom user model
+AUTH_USER_MODEL = 'myapp.CustomUser'  # ADDED: Use custom user model
 
 # Authentication URLs
 LOGIN_URL = '/login/'  # ADDED
