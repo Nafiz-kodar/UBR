@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp',
-    
 ]
 
 MIDDLEWARE = [
@@ -74,16 +73,27 @@ WSGI_APPLICATION = 'ubr.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'ubr',  
+#         'USER': 'ubr_user',
+#         'PASSWORD': 'ubr_nsm123',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ubr',  
-        'USER': 'ubr_user',
-        'PASSWORD': 'ubr_nsm123',
+        'NAME': 'property_inspection_db',
+        'USER': 'root',
+        'PASSWORD': '12345@@',
         'HOST': 'localhost',
         'PORT': '3306',
     }
 }
+
 
 
 # Password validation
@@ -121,3 +131,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Serve project-level static files during development
+# The repository has a top-level `static/` folder at the repo root (one level above BASE_DIR).
+# Use BASE_DIR.parent to point to that directory so runserver can find `/static/css/style.css`.
+STATICFILES_DIRS = [BASE_DIR.parent / "static"]
+
+
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/'
+# Default primary key type for models
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# End of settings.py
