@@ -3,7 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
-from .models import User, Property, Inspection
+from django.db.models import Count, Q
+from .models import CustomUser, Property, Inspection
+
 
 # Authentication Views
 def signup_view(request):
@@ -16,16 +18,16 @@ def signup_view(request):
         password = request.POST.get('password')
         
         # Validation
-        if User.objects.filter(email=email).exists():
+        if CustomUser.objects.filter(email=email).exists():
             messages.error(request, 'Email already exists')
-            return render(request, 'signup.html')
+            return render(request, 'signup.html', {'email': email})
         
-        if User.objects.filter(nid=nid).exists():
+        if CustomUser.objects.filter(nid=nid).exists():
             messages.error(request, 'NID already registered')
-            return render(request, 'signup.html')
+            return render(request, 'signup.html', {'email': email})
         
         # Create user
-        user = User.objects.create(
+        user = CustomUser.objects.create(
             name=name,
             email=email,
             nid=nid,
@@ -38,6 +40,7 @@ def signup_view(request):
         return redirect('login')
     
     return render(request, 'signup.html')
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -69,15 +72,19 @@ def login_view(request):
     
     return render(request, 'login.html')
 
+
 @login_required
 def logout_view(request):
     logout(request)
+    messages.success(request, 'You have been logged out successfully.')
     return redirect('login')
+
 
 # Dashboard Views
 @login_required
 def owner_dashboard(request):
     if request.user.user_type != 'owner':
+        messages.error(request, 'Access denied. Owners only.')
         return redirect('login')
     
     properties = Property.objects.filter(owner=request.user)
@@ -88,12 +95,15 @@ def owner_dashboard(request):
         'total_properties': properties.count(),
         'active_inspections': inspections.filter(status='in_progress').count(),
         'pending_actions': inspections.filter(status='pending').count(),
+        'documents': 0,  # Add document model later
     }
     return render(request, 'owner_dashboard.html', context)
+
 
 @login_required
 def inspector_dashboard(request):
     if request.user.user_type != 'inspector':
+        messages.error(request, 'Access denied. Inspectors only.')
         return redirect('login')
     
     inspections = Inspection.objects.filter(inspector=request.user)
@@ -104,30 +114,43 @@ def inspector_dashboard(request):
         'pending_inspections': inspections.filter(status='pending').count(),
         'in_progress': inspections.filter(status='in_progress').count(),
         'completed': inspections.filter(status='completed').count(),
+        'inspections': inspections.order_by('-scheduled_date')[:10],
     }
     return render(request, 'inspector_dashboard.html', context)
+
 
 @login_required
 def admin_dashboard(request):
     if request.user.user_type != 'admin':
+        messages.error(request, 'Access denied. Admins only.')
         return redirect('login')
     
     context = {
         'user': request.user,
-        'total_users': User.objects.count(),
+        'total_users': CustomUser.objects.count(),
         'total_properties': Property.objects.count(),
         'total_inspections': Inspection.objects.count(),
-        'inspectors': User.objects.filter(user_type='inspector').count(),
+        'inspectors': CustomUser.objects.filter(user_type='inspector').count(),
+        'owners': CustomUser.objects.filter(user_type='owner').count(),
+        'recent_users': CustomUser.objects.order_by('-u_id')[:5],
+        'recent_properties': Property.objects.order_by('-created_at')[:5],
     }
     return render(request, 'admin_dashboard.html', context)
+
 
 # Property Views
 @login_required
 def my_properties(request):
     if request.user.user_type != 'owner':
+        messages.error(request, 'Access denied. Owners only.')
         return redirect('login')
     
     properties = Property.objects.filter(owner=request.user).order_by('-created_at')
+    
+    # Add inspection counts for each property
+    for prop in properties:
+        prop.inspection_count = prop.inspections.count()
+        prop.document_count = 0  # Add when document model exists
     
     context = {
         'user': request.user,
@@ -135,14 +158,20 @@ def my_properties(request):
     }
     return render(request, 'my_properties.html', context)
 
+
 @login_required
 def add_property(request):
     if request.user.user_type != 'owner':
+        messages.error(request, 'Access denied. Owners only.')
         return redirect('login')
     
     if request.method == 'POST':
         property_type = request.POST.get('property_type')
         location = request.POST.get('location')
+        
+        if not property_type or not location:
+            messages.error(request, 'All fields are required.')
+            return render(request, 'add_property.html')
         
         Property.objects.create(
             property_type=property_type,
@@ -154,3 +183,57 @@ def add_property(request):
         return redirect('my_properties')
     
     return render(request, 'add_property.html')
+
+
+@login_required
+def property_detail(request, p_id):
+    try:
+        property_obj = Property.objects.get(p_id=p_id)
+        
+        # Check permissions
+        if request.user.user_type == 'owner' and property_obj.owner != request.user:
+            messages.error(request, 'You do not have permission to view this property.')
+            return redirect('my_properties')
+        
+        inspections = property_obj.inspections.all().order_by('-scheduled_date')
+        
+        context = {
+            'user': request.user,
+            'property': property_obj,
+            'inspections': inspections,
+        }
+        return render(request, 'property_detail.html', context)
+    
+    except Property.DoesNotExist:
+        messages.error(request, 'Property not found.')
+        return redirect('my_properties')
+
+
+@login_required
+def delete_property(request, p_id):
+    if request.user.user_type != 'owner':
+        messages.error(request, 'Access denied.')
+        return redirect('login')
+    
+    try:
+        property_obj = Property.objects.get(p_id=p_id, owner=request.user)
+        property_obj.delete()
+        messages.success(request, 'Property deleted successfully.')
+    except Property.DoesNotExist:
+        messages.error(request, 'Property not found or you do not have permission.')
+    
+    return redirect('my_properties')
+
+
+# Home/Landing Page
+def home(request):
+    if request.user.is_authenticated:
+        # Redirect to appropriate dashboard based on user type
+        if request.user.user_type == 'owner':
+            return redirect('owner_dashboard')
+        elif request.user.user_type == 'inspector':
+            return redirect('inspector_dashboard')
+        elif request.user.user_type == 'admin':
+            return redirect('admin_dashboard')
+    
+    return redirect('login')
