@@ -3,8 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
-from django.db.models import Count, Q
-from .models import CustomUser, Property, Inspection
+from .models import CustomUser, Property, InspectionRequest, Report
 
 
 # Authentication Views
@@ -88,14 +87,14 @@ def owner_dashboard(request):
         return redirect('login')
     
     properties = Property.objects.filter(owner=request.user)
-    inspections = Inspection.objects.filter(property__owner=request.user)
+    inspection_requests = InspectionRequest.objects.all()  # Adjust query as needed
     
     context = {
         'user': request.user,
         'total_properties': properties.count(),
-        'active_inspections': inspections.filter(status='in_progress').count(),
-        'pending_actions': inspections.filter(status='pending').count(),
-        'documents': 0,  # Add document model later
+        'active_inspections': inspection_requests.count(),  # Adjust based on your logic
+        'pending_actions': inspection_requests.filter(req_type='pending').count() if inspection_requests else 0,
+        'documents': 0,
     }
     return render(request, 'owner_dashboard.html', context)
 
@@ -106,15 +105,17 @@ def inspector_dashboard(request):
         messages.error(request, 'Access denied. Inspectors only.')
         return redirect('login')
     
-    inspections = Inspection.objects.filter(inspector=request.user)
+    # Get inspection requests assigned to this inspector
+    # You'll need to adjust this based on your Assigns model logic
+    inspection_requests = InspectionRequest.objects.all()  # Placeholder
     
     context = {
         'user': request.user,
-        'total_inspections': inspections.count(),
-        'pending_inspections': inspections.filter(status='pending').count(),
-        'in_progress': inspections.filter(status='in_progress').count(),
-        'completed': inspections.filter(status='completed').count(),
-        'inspections': inspections.order_by('-scheduled_date')[:10],
+        'total_inspections': inspection_requests.count(),
+        'pending_inspections': inspection_requests.filter(req_type='pending').count() if inspection_requests else 0,
+        'in_progress': 0,  # Adjust based on your req_type values
+        'completed': 0,    # Adjust based on your req_type values
+        'inspections': inspection_requests[:10],
     }
     return render(request, 'inspector_dashboard.html', context)
 
@@ -129,11 +130,11 @@ def admin_dashboard(request):
         'user': request.user,
         'total_users': CustomUser.objects.count(),
         'total_properties': Property.objects.count(),
-        'total_inspections': Inspection.objects.count(),
+        'total_inspections': InspectionRequest.objects.count(),
         'inspectors': CustomUser.objects.filter(user_type='inspector').count(),
         'owners': CustomUser.objects.filter(user_type='owner').count(),
         'recent_users': CustomUser.objects.order_by('-u_id')[:5],
-        'recent_properties': Property.objects.order_by('-created_at')[:5],
+        'recent_properties': Property.objects.order_by('-p_id')[:5],
     }
     return render(request, 'admin_dashboard.html', context)
 
@@ -145,12 +146,7 @@ def my_properties(request):
         messages.error(request, 'Access denied. Owners only.')
         return redirect('login')
     
-    properties = Property.objects.filter(owner=request.user).order_by('-created_at')
-    
-    # Add inspection counts for each property
-    for prop in properties:
-        prop.inspection_count = prop.inspections.count()
-        prop.document_count = 0  # Add when document model exists
+    properties = Property.objects.filter(owner=request.user).order_by('-p_id')
     
     context = {
         'user': request.user,
@@ -174,8 +170,8 @@ def add_property(request):
             return render(request, 'add_property.html')
         
         Property.objects.create(
-            property_type=property_type,
-            location=location,
+            type=property_type,
+            locations=location,
             owner=request.user
         )
         
@@ -195,12 +191,9 @@ def property_detail(request, p_id):
             messages.error(request, 'You do not have permission to view this property.')
             return redirect('my_properties')
         
-        inspections = property_obj.inspections.all().order_by('-scheduled_date')
-        
         context = {
             'user': request.user,
             'property': property_obj,
-            'inspections': inspections,
         }
         return render(request, 'property_detail.html', context)
     

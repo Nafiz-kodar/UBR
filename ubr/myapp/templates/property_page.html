@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Properties</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        nav {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 30px;
+        }
+
+        nav a {
+            display: inline-block;
+            padding: 18px 0;
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            font-size: 15px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        nav a.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            color: #e74c3c !important;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .add-property-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .add-property-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .filters {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+            min-width: 150px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .property-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .property-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+        }
+
+        .property-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .badge-residential { color: #667eea; }
+        .badge-commercial { color: #f39c12; }
+        .badge-apartment { color: #3498db; }
+        .badge-land { color: #27ae60; }
+
+        .property-content {
+            padding: 20px;
+        }
+
+        .property-id {
+            color: #999;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .property-type {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .property-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .property-stats {
+            display: flex;
+            gap: 20px;
+            padding: 15px 0;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .property-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-view {
+            background: #e8e5ff;
+            color: #667eea;
+        }
+
+        .btn-edit {
+            background: #fff4e0;
+            color: #f39c12;
+        }
+
+        .btn-delete {
+            background: #ffe5e5;
+            color: #e74c3c;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .nav-content {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .properties-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .search-input, .filter-select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🏢 Property Management System</h1>
+            <div class="user-info">
+                <div class="user-avatar">{{ user.name.0|upper }}</div>
+                <div class="user-name">{{ user.name }}</div>
+            </div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-content">
+            <a href="/dashboard/">Dashboard</a>
+            <a href="#" class="active">My Properties</a>
+            <a href="#">Inspections</a>
+            <a href="#">Documents</a>
+            <a href="#">Profile</a>
+            <a href="#">Settings</a>
+            <a href="/logout/" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>My Properties ({{ properties|length }})</h2>
+            <a href="/properties/add/" class="add-property-btn">
+                <span>➕</span>
+                <span>Add New Property</span>
+            </a>
+        </div>
+
+        <div class="filters">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by ID, type, or location...">
+            <select class="filter-select" id="typeFilter">
+                <option value="">All Types</option>
+                <option value="residential">Residential</option>
+                <option value="commercial">Commercial</option>
+                <option value="apartment">Apartment</option>
+                <option value="land">Land</option>
+            </select>
+            <select class="filter-select" id="locationFilter">
+                <option value="">All Locations</option>
+                <option value="dhanmondi">Dhanmondi</option>
+                <option value="gulshan">Gulshan</option>
+                <option value="banani">Banani</option>
+                <option value="uttara">Uttara</option>
+                <option value="mirpur">Mirpur</option>
+            </select>
+        </div>
+
+        <div class="properties-grid" id="propertiesGrid">
+            <!-- Property Card 1 -->
+            <div class="property-card" data-type="residential" data-location="dhanmondi">
+                <div class="property-image">
+                    🏠
+                    <span class="property-badge badge-residential">Residential</span>
+                </div>
+                <div class="property-content">
+                    <div class="property-id">Property #P-1234</div>
+                    <div class="property-type">Residential House</div>
+                    <div class="property-location">
+                        <span>📍</span>
+                        <span>House 12, Road 5, Dhanmondi, Dhaka</span>
+                    </div>
+                    <div class="property-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Inspections</span>
+                            <span class="stat-value">3</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Documents</span>
+                            <span class="stat-value">8</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Status</span>
+                            <span class="stat-value">✓</span>
+                        </div>
+                    </div>
+                    <div class="property-actions">
+                        <a href="#" class="action-btn btn-view">View</a>
+                        <a href="#" class="action-btn btn-edit">Edit</a>
+                        <button class="action-btn btn-delete" onclick="deleteProperty('P-1234')">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Card 2 -->
+            <div class="property-card" data-type="commercial" data-location="gulshan">
+                <div class="property-image">
+                    🏢
+                    <span class="property-badge badge-commercial">Commercial</span>
+                </div>
+                <div class="property-content">
+                    <div class="property-id">Property #P-1235</div>
+                    <div class="property-type">Commercial Building</div>
+                    <div class="property-location">
+                        <span>📍</span>
+                        <span>Plot 45, Road 11, Gulshan-2, Dhaka</span>
+                    </div>
+                    <div class="property-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Inspections</span>
+                            <span class="stat-value">5</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Documents</span>
+                            <span class="stat-value">12</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Status</span>
+                            <span class="stat-value">⏱️</span>
+                        </div>
+                    </div>
+                    <div class="property-actions">
+                        <a href="#" class="action-btn btn-view">View</a>
+                        <a href="#" class="action-btn btn-edit">Edit</a>
+                        <button class="action-btn btn-delete" onclick="deleteProperty('P-1235')">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Card 3 -->
+            <div class="property-card" data-type="apartment" data-location="banani">
+                <div class="property-image">
+                    🏘️
+                    <span class="property-badge badge-apartment">Apartment</span>
+                </div>
+                <div class="property-content">
+                    <div class="property-id">Property #P-1236</div>
+                    <div class="property-type">Apartment Complex</div>
+                    <div class="property-location">
+                        <span>📍</span>
+                        <span>Building C, Banani DOHS, Dhaka</span>
+                    </div>
+                    <div class="property-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Inspections</span>
+                            <span class="stat-value">7</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Documents</span>
+                            <span class="stat-value">15</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Status</span>
+                            <span class="stat-value">✓</span>
+                        </div>
+                    </div>
+                    <div class="property-actions">
+                        <a href="#" class="action-btn btn-view">View</a>
+                        <a href="#" class="action-btn btn-edit">Edit</a>
+                        <button class="action-btn btn-delete" onclick="deleteProperty('P-1236')">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Card 4 -->
+            <div class="property-card" data-type="land" data-location="uttara">
+                <div class="property-image">
+                    🌳
+                    <span class="property-badge badge-land">Land</span>
+                </div>
+                <div class="property-content">
+                    <div class="property-id">Property #P-1237</div>
+                    <div class="property-type">Vacant Land</div>
+                    <div class="property-location">
+                        <span>📍</span>
+                        <span>Sector 10, Uttara, Dhaka</span>
+                    </div>
+                    <div class="property-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Inspections</span>
+                            <span class="stat-value">2</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Documents</span>
+                            <span class="stat-value">5</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Status</span>
+                            <span class="stat-value">✓</span>
+                        </div>
+                    </div>
+                    <div class="property-actions">
+                        <a href="#" class="action-btn btn-view">View</a>
+                        <a href="#" class="action-btn btn-edit">Edit</a>
+                        <button class="action-btn btn-delete" onclick="deleteProperty('P-1237')">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State (hidden by default, show when no properties) -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">🏠</div>
+            <h3>No Properties Found</h3>
+            <p>Start by adding your first property to manage and track inspections.</p>
+            <a href="/properties/add/" class="add-property-btn">
+                <span>➕</span>
+                <span>Add Your First Property</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
+        const locationFilter = document.getElementById('locationFilter');
+        const propertiesGrid = document.getElementById('propertiesGrid');
+        const propertyCards = document.querySelectorAll('.property-card');
+        const emptyState = document.getElementById('emptyState');
+
+        function filterProperties() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedType = typeFilter.value.toLowerCase();
+            const selectedLocation = locationFilter.value.toLowerCase();
+            let visibleCount = 0;
+
+            propertyCards.forEach(card => {
+                const cardText = card.textContent.toLowerCase();
+                const cardType = card.getAttribute('data-type');
+                const cardLocation = card.getAttribute('data-location');
+
+                const matchesSearch = cardText.includes(searchTerm);
+                const matchesType = !selectedType || cardType === selectedType;
+                const matchesLocation = !selectedLocation || cardLocation === selectedLocation;
+
+                if (matchesSearch && matchesType && matchesLocation) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0) {
+                propertiesGrid.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h3').textContent = 'No Properties Match Your Filters';
+                emptyState.querySelector('p').textContent = 'Try adjusting your search criteria or filters.';
+            } else {
+                propertiesGrid.style.display = 'grid';
+                emptyState.style.display = 'none';
+            }
+        }
+
+        searchInput.addEventListener('input', filterProperties);
+        typeFilter.addEventListener('change', filterProperties);
+        locationFilter.addEventListener('change', filterProperties);
+
+        function deleteProperty(propertyId) {
+            if (confirm(`Are you sure you want to delete property ${propertyId}? This action cannot be undone.`)) {
+                console.log(`Deleting property ${propertyId}`);
+                // Add AJAX call here to delete from backend
+            }
+        }
+
+        const logoutBtn = document.querySelector('.logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(e) {
+                if (!confirm('Are you sure you want to logout?')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
