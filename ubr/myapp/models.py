@@ -1,4 +1,3 @@
-# myapp/models.py
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
@@ -38,7 +37,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         related_name='approved_inspectors'
     )
     
-    # Required for Django admin
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     
@@ -49,10 +47,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     
     class Meta:
         db_table = 'user'
-        managed = False  # Django won't try to create/modify this table
+        managed = False
     
     def __str__(self):
         return self.email or f"User {self.u_id}"
+    
+    @property
+    def is_approved_inspector(self):
+        """Check if inspector is approved"""
+        if self.user_type != 'inspector':
+            return True
+        return self.approved_inspect is not None
 
 
 class Property(models.Model):
@@ -76,25 +81,24 @@ class Property(models.Model):
         return f"Property #{self.p_id} - {self.type}"
 
 
-class Message(models.Model):
-    m_id = models.AutoField(primary_key=True)
-    sender_id = models.IntegerField(null=True, blank=True)
-    receiver_id = models.IntegerField(null=True, blank=True)
-    user = models.ForeignKey(
-        CustomUser,
+class InspectionRequest(models.Model):
+    req_id = models.AutoField(primary_key=True)
+    req_type = models.CharField(max_length=100, null=True, blank=True)
+    property = models.ForeignKey(
+        Property,
         on_delete=models.CASCADE,
-        db_column='user_id',
-        related_name='messages',
+        db_column='property_id',
+        related_name='inspection_requests',
         null=True,
         blank=True
     )
     
     class Meta:
-        db_table = 'message'
+        db_table = 'inspection_request'
         managed = False
     
     def __str__(self):
-        return f"Message #{self.m_id}"
+        return f"Request #{self.req_id} - {self.req_type}"
 
 
 class Report(models.Model):
@@ -115,6 +119,26 @@ class Report(models.Model):
         null=True,
         blank=True
     )
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        db_column='property_id',
+        related_name='reports',
+        null=True,
+        blank=True
+    )
+    inspection_request = models.ForeignKey(
+        InspectionRequest,
+        on_delete=models.SET_NULL,
+        db_column='inspection_request_id',
+        related_name='reports',
+        null=True,
+        blank=True
+    )
+    report_content = models.TextField(null=True, blank=True)
+    is_approved = models.BooleanField(default=False)
+    has_issues = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         db_table = 'report'
@@ -127,6 +151,9 @@ class Report(models.Model):
 class Transaction(models.Model):
     t_id = models.AutoField(primary_key=True)
     details = models.TextField(null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    payment_status = models.CharField(max_length=50, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         db_table = 'transaction'
@@ -136,16 +163,25 @@ class Transaction(models.Model):
         return f"Transaction #{self.t_id}"
 
 
-class InspectionRequest(models.Model):
-    req_id = models.AutoField(primary_key=True)
-    req_type = models.CharField(max_length=100, null=True, blank=True)
+class Message(models.Model):
+    m_id = models.AutoField(primary_key=True)
+    sender_id = models.IntegerField(null=True, blank=True)
+    receiver_id = models.IntegerField(null=True, blank=True)
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        db_column='user_id',
+        related_name='messages',
+        null=True,
+        blank=True
+    )
     
     class Meta:
-        db_table = 'inspection_request'
+        db_table = 'message'
         managed = False
     
     def __str__(self):
-        return f"Request #{self.req_id} - {self.req_type}"
+        return f"Message #{self.m_id}"
 
 
 class Submits(models.Model):
@@ -194,6 +230,7 @@ class Assigns(models.Model):
         db_column='inspector_id',
         related_name='assigned_as_inspector'
     )
+    assigned_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         db_table = 'assigns'

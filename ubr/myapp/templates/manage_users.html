@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover, .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-table {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            background: #f5f7fa;
+            color: #666;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 18px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #d4f4dd;
+            color: #27ae60;
+        }
+
+        .status-pending {
+            background: #fff4e0;
+            color: #f39c12;
+        }
+
+        .status-inactive {
+            background: #ffe5e5;
+            color: #e74c3c;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-approve {
+            background: #d4f4dd;
+            color: #27ae60;
+        }
+
+        .btn-view {
+            background: #e8f4ff;
+            color: #3498db;
+        }
+
+        .btn-edit {
+            background: #fff4e0;
+            color: #f39c12;
+        }
+
+        .btn-delete {
+            background: #ffe5e5;
+            color: #e74c3c;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-info {
+            background: #e8f4ff;
+            color: #3498db;
+            border: 1px solid #b8d4ff;
+        }
+
+        .alert-warning {
+            background: #fff8e5;
+            color: #f39c12;
+            border: 1px solid #ffe0a3;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>⚙️ User Management</h1>
+            <a href="{% url 'admin_dashboard' %}" class="back-link">
+                <span>←</span>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>Manage Users</h2>
+            <p>View and manage all system users</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('all')">All Users ({{ users|length }})</button>
+            <button class="tab" onclick="showTab('owners')">Owners</button>
+            <button class="tab" onclick="showTab('inspectors')">Inspectors</button>
+            <button class="tab" onclick="showTab('admins')">Admins</button>
+            <button class="tab" onclick="showTab('pending')">Pending Approval</button>
+        </div>
+
+        <div class="tab-content active" id="all">
+            <div class="data-table">
+                <div class="search-filter">
+                    <input type="text" class="search-input" placeholder="🔍 Search by name, email, or NID..." id="searchAll">
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Type</th>
+                            <th>NID</th>
+                            <th>License</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allUsersTable">
+                        {% for user_item in users %}
+                        <tr>
+                            <td>#{{ user_item.u_id }}</td>
+                            <td>{{ user_item.name }}</td>
+                            <td>{{ user_item.email }}</td>
+                            <td><span class="status-badge status-active">{{ user_item.user_type|title }}</span></td>
+                            <td>{{ user_item.nid|default:"N/A" }}</td>
+                            <td>{{ user_item.license|default:"N/A" }}</td>
+                            <td>
+                                {% if user_item.user_type == 'inspector' and not user_item.approved_inspect %}
+                                    <span class="status-badge status-pending">Pending</span>
+                                {% else %}
+                                    <span class="status-badge status-active">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user_item.user_type == 'inspector' and not user_item.approved_inspect %}
+                                    <a href="{% url 'approve_inspector' user_item.u_id %}" class="action-btn btn-approve" onclick="return confirm('Approve this inspector?')">Approve</a>
+                                {% endif %}
+                                <button class="action-btn btn-view">View</button>
+                                <button class="action-btn btn-edit">Edit</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <div class="empty-state-icon">👥</div>
+                                <p>No users found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="owners">
+            <div class="data-table">
+                <div class="alert alert-info">
+                    <span>ℹ️</span>
+                    <span>Property owners who use the system to manage their properties and inspections.</span>
+                </div>
+                
+                <div class="search-filter">
+                    <input type="text" class="search-input" placeholder="🔍 Search owners..." id="searchOwners">
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>NID</th>
+                            <th>Properties</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_item in users %}
+                        {% if user_item.user_type == 'owner' %}
+                        <tr>
+                            <td>#{{ user_item.u_id }}</td>
+                            <td>{{ user_item.name }}</td>
+                            <td>{{ user_item.email }}</td>
+                            <td>{{ user_item.phone|default:"N/A" }}</td>
+                            <td>{{ user_item.nid }}</td>
+                            <td>{{ user_item.properties.count }}</td>
+                            <td>
+                                <button class="action-btn btn-view">View</button>
+                                <button class="action-btn btn-edit">Edit</button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="inspectors">
+            <div class="data-table">
+                <div class="alert alert-info">
+                    <span>ℹ️</span>
+                    <span>Licensed inspectors who conduct property inspections.</span>
+                </div>
+                
+                <div class="search-filter">
+                    <input type="text" class="search-input" placeholder="🔍 Search inspectors..." id="searchInspectors">
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>License</th>
+                            <th>Status</th>
+                            <th>Inspections</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_item in users %}
+                        {% if user_item.user_type == 'inspector' %}
+                        <tr>
+                            <td>#{{ user_item.u_id }}</td>
+                            <td>{{ user_item.name }}</td>
+                            <td>{{ user_item.email }}</td>
+                            <td>{{ user_item.license }}</td>
+                            <td>
+                                {% if user_item.approved_inspect %}
+                                    <span class="status-badge status-active">Approved</span>
+                                {% else %}
+                                    <span class="status-badge status-pending">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>0</td>
+                            <td>
+                                {% if not user_item.approved_inspect %}
+                                    <a href="{% url 'approve_inspector' user_item.u_id %}" class="action-btn btn-approve" onclick="return confirm('Approve inspector {{ user_item.name }}?')">Approve</a>
+                                {% endif %}
+                                <button class="action-btn btn-view">View</button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="admins">
+            <div class="data-table">
+                <div class="alert alert-warning">
+                    <span>⚠️</span>
+                    <span>Administrators have full system access. Handle admin accounts with care.</span>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_item in users %}
+                        {% if user_item.user_type == 'admin' %}
+                        <tr>
+                            <td>#{{ user_item.u_id }}</td>
+                            <td>{{ user_item.name }}</td>
+                            <td>{{ user_item.email }}</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <button class="action-btn btn-view">View</button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="pending">
+            <div class="data-table">
+                <div class="alert alert-warning">
+                    <span>⏱️</span>
+                    <span>These inspectors are awaiting approval. Review their credentials before approving.</span>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>License</th>
+                            <th>Phone</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_item in users %}
+                        {% if user_item.user_type == 'inspector' and not user_item.approved_inspect %}
+                        <tr>
+                            <td>#{{ user_item.u_id }}</td>
+                            <td>{{ user_item.name }}</td>
+                            <td>{{ user_item.email }}</td>
+                            <td>{{ user_item.license }}</td>
+                            <td>{{ user_item.phone|default:"N/A" }}</td>
+                            <td>
+                                <a href="{% url 'approve_inspector' user_item.u_id %}" class="action-btn btn-approve" onclick="return confirm('Approve inspector {{ user_item.name }}?')">Approve Inspector</a>
+                                <button class="action-btn btn-view">View Details</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <div class="empty-state-icon">✓</div>
+                                <p>No pending approvals</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Search functionality
+        document.querySelectorAll('.search-input').forEach(input => {
+            input.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const table = this.closest('.data-table').querySelector('tbody');
+                const rows = table.querySelectorAll('tr');
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
