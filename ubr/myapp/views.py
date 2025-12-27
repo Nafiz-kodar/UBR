@@ -7,6 +7,7 @@ from .models import Profile, InspectionRequest, InspectionReport, Message  # imp
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
+from .decorators import role_required
 
 
 def signup(request):
@@ -66,6 +67,7 @@ def dashboard_redirect(request):
 
 
 @login_required
+@role_required('Owner')
 def owner_dashboard(request):
     """
     Show inspection requests for the logged-in building owner.
@@ -82,6 +84,7 @@ def owner_dashboard(request):
 
 
 @login_required
+@role_required('Inspector')
 def inspector_dashboard(request):
     """
     Show inspection requests assigned to the logged-in inspector.
@@ -110,10 +113,13 @@ def edit_profile(request):
 
 
 @login_required
+@role_required('Admin')
 def admin_dashboard(request):
     """
     Show all inspection requests to admin with optional balance info.
     """
+    # Only allow Admin users (staff check remains as an extra safety net)
+    # role_required is not applied here because some admin-only flows check is_staff
     requests = InspectionRequest.objects.all()
     # get or create single AdminBalance row
     from .models import AdminBalance, Profile
