@@ -375,6 +375,9 @@
                 width: 100%;
             }
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -404,8 +407,10 @@
         <div class="page-header">
             <h2>My Properties ({{ properties|length }})</h2>
             <a href="/properties/add/" class="add-property-btn">
-                <span>➕</span>
-                <span>Add New Property</span>
+                <button class="add-property-btn" aria-label="Add New Property">
+                    <span>➕</span>
+                    <span>Add New Property</span>
+                </button>
             </a>
         </div>
 
@@ -568,7 +573,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        <div class="empty-state hidden" id="emptyState">
 
         <!-- Empty State (hidden by default, show when no properties) -->
         <div class="empty-state" id="emptyState" style="display: none;">

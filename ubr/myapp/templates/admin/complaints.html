@@ -19,11 +19,11 @@
                         <button type="submit" name="action" value="resolve" class="btn btn-sm btn-success">Resolve</button>
                     </form>
                     {% if c.against_inspector %}
-                    <form method="post" style="display:inline">{% csrf_token %}
+                    <form method="post" class="inline-form">{% csrf_token %}
                         <input type="hidden" name="complaint_id" value="{{ c.id }}">
                         <button type="submit" name="action" value="ban" class="btn btn-sm btn-danger">Ban Inspector</button>
                     </form>
-                    <form method="post" style="display:inline">{% csrf_token %}
+                    <form method="""post" class="""inline-form">{% csrf_token %}
                         <input type="hidden" name="complaint_id" value="{{ c.id }}">
                         <button type="submit" name="action" value="unban" class="btn btn-sm btn-outline-danger">Unban Inspector</button>
                     </form>
