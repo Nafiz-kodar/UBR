@@ -14,26 +14,26 @@
                 <td>{{ c.admin_response|default:'-' }}</td>
                 <td>{{ c.resolved }}</td>
                 <td>
-                    <form method="post" style="display:inline">{% csrf_token %}
+                    <form method="post" class="inline-form">{% csrf_token %}
                         <input type="hidden" name="complaint_id" value="{{ c.id }}">
-                        <button name="action" value="resolve" class="btn btn-sm btn-success">Resolve</button>
+                        <button type="submit" name="action" value="resolve" class="btn btn-sm btn-success">Resolve</button>
                     </form>
                     {% if c.against_inspector %}
                     <form method="post" style="display:inline">{% csrf_token %}
                         <input type="hidden" name="complaint_id" value="{{ c.id }}">
-                        <button name="action" value="ban" class="btn btn-sm btn-danger">Ban Inspector</button>
+                        <button type="submit" name="action" value="ban" class="btn btn-sm btn-danger">Ban Inspector</button>
                     </form>
                     <form method="post" style="display:inline">{% csrf_token %}
                         <input type="hidden" name="complaint_id" value="{{ c.id }}">
-                        <button name="action" value="unban" class="btn btn-sm btn-outline-danger">Unban Inspector</button>
+                        <button type="submit" name="action" value="unban" class="btn btn-sm btn-outline-danger">Unban Inspector</button>
                     </form>
                     {% endif %}
-                    <button class="btn btn-sm btn-secondary" onclick="document.getElementById('resp-{{ c.id }}').style.display='block'">Respond</button>
-                    <div id="resp-{{ c.id }}" style="display:none;margin-top:8px">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('resp-{{ c.id }}').style.display='block'">Respond</button>
+                    <div id="resp-{{ c.id }}" class="hidden-response">
                         <form method="post">{% csrf_token %}
                             <input type="hidden" name="complaint_id" value="{{ c.id }}">
                             <textarea name="admin_response" class="form-control mb-1" rows="2" placeholder="Write response"></textarea>
-                            <button name="action" value="respond" class="btn btn-sm btn-primary">Send Response</button>
+                            <button type="submit" name="action" value="respond" class="btn btn-sm btn-primary">Send Response</button>
                         </form>
                     </div>
                 </td>

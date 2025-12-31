@@ -1,51 +1,9 @@
 from django.shortcuts import render, redirect
-<<<<<<< HEAD
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
-from django.contrib import messages
-from .models import CustomUser, Property, InspectionRequest, Report
-
-
-# Authentication Views
-def signup_view(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        nid = request.POST.get('nid')
-        phone = request.POST.get('phone')
-        user_type = request.POST.get('user_type')
-        password = request.POST.get('password')
-        
-        # Validation
-        if CustomUser.objects.filter(email=email).exists():
-            messages.error(request, 'Email already exists')
-            return render(request, 'signup.html', {'email': email})
-        
-        if CustomUser.objects.filter(nid=nid).exists():
-            messages.error(request, 'NID already registered')
-            return render(request, 'signup.html', {'email': email})
-        
-        # Create user
-        user = CustomUser.objects.create(
-            name=name,
-            email=email,
-            nid=nid,
-            phone=phone,
-            user_type=user_type,
-            password=make_password(password)
-        )
-        
-        messages.success(request, 'Account created successfully! Please login.')
-        return redirect('login')
-    
-    return render(request, 'signup.html')
-=======
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import SignUpForm
-from .models import Profile, InspectionRequest, InspectionReport, Message  # import your models
+from .models import Profile, InspectionRequest, InspectionReport, Message, Property  # import your models
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
@@ -83,7 +41,6 @@ def signup(request):
         form = SignUpForm()
 
     return render(request, 'registration/signup.html', {'form': form})
->>>>>>> sadi
 
 
 def login_view(request):
@@ -173,12 +130,12 @@ def admin_dashboard(request):
     
     context = {
         'user': request.user,
-        'total_users': CustomUser.objects.count(),
+        'total_users': User.objects.count(),
         'total_properties': Property.objects.count(),
         'total_inspections': InspectionRequest.objects.count(),
-        'inspectors': CustomUser.objects.filter(user_type='inspector').count(),
-        'owners': CustomUser.objects.filter(user_type='owner').count(),
-        'recent_users': CustomUser.objects.order_by('-u_id')[:5],
+        'inspectors': User.objects.filter(profile__user_type='inspector').count(),
+        'owners': User.objects.filter(profile__user_type='owner').count(),
+        'recent_users': User.objects.order_by('-id')[:5],
         'recent_properties': Property.objects.order_by('-p_id')[:5],
     }
     return render(request, 'admin_dashboard.html', context)

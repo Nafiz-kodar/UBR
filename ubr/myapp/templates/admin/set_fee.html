@@ -6,9 +6,9 @@
     <form method="post">{% csrf_token %}
         <div class="mb-3">
             <label>Fee</label>
-            <input type="text" name="fee" class="form-control" value="{{ request_obj.fee }}">
+            <input type="text" name="fee" class="form-control" value="{{ request_obj.fee }}" title="Enter the inspection fee" placeholder="Enter fee">
         </div>
-        <button class="btn btn-primary">Save Fee</button>
+        <button type="submit" class="btn btn-primary">Save Fee</button>
         <a class="btn btn-secondary" href="{% url 'admin_dashboard' %}">Cancel</a>
     </form>
 </div>
