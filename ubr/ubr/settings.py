@@ -160,17 +160,6 @@ LOGOUT_REDIRECT_URL = '/login/'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 SESSION_SAVE_EVERY_REQUEST = False
 
-<<<<<<< HEAD
-# Message tags for Bootstrap compatibility
-from django.contrib.messages import constants as messages
-MESSAGE_TAGS = {
-    messages.DEBUG: 'debug',
-    messages.INFO: 'info',
-    messages.SUCCESS: 'success',
-    messages.WARNING: 'warning',
-    messages.ERROR: 'danger',
-}
-=======
 WSGI_APPLICATION = 'ubr.wsgi.application'
 
 
@@ -247,4 +236,3 @@ LOGOUT_REDIRECT_URL = '/'
 # Default primary key type for models
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # End of settings.py
->>>>>>> sadi

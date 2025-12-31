@@ -265,18 +265,6 @@ def delete_property(request, p_id):
 
 # Home/Landing Page
 def home(request):
-<<<<<<< HEAD
-    if request.user.is_authenticated:
-        # Redirect to appropriate dashboard based on user type
-        if request.user.user_type == 'owner':
-            return redirect('owner_dashboard')
-        elif request.user.user_type == 'inspector':
-            return redirect('inspector_dashboard')
-        elif request.user.user_type == 'admin':
-            return redirect('admin_dashboard')
-    
-    return redirect('login')
-=======
     """
     Simple home page view.
     """
@@ -674,4 +662,3 @@ def download_report(request, pk):
     resp = HttpResponse(content, content_type='text/plain; charset=utf-8')
     resp['Content-Disposition'] = f'attachment; filename=inspection_report_{report.pk}.txt'
     return resp
->>>>>>> sadi

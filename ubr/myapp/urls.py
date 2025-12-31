@@ -2,23 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-<<<<<<< HEAD
-    # Authentication
-    path('', views.home, name='home'),  # Add this line for homepage
-    path('signup/', views.signup_view, name='signup'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    
-    # Dashboards
-    path('dashboard/', views.owner_dashboard, name='owner_dashboard'),
-    path('inspector/dashboard/', views.inspector_dashboard, name='inspector_dashboard'),
-    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    
-    # Properties
-    path('properties/', views.my_properties, name='my_properties'),
-    path('properties/add/', views.add_property, name='add_property'),
-]
-=======
     path('', views.home, name='home'),
     path('signup/', views.signup, name='signup'),
     path('login/', auth_views.LoginView.as_view(), name='login'),
@@ -50,4 +33,3 @@ urlpatterns = [
     path('report/<int:pk>/download/', views.download_report, name='download_report'),
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
 ]
->>>>>>> sadi
