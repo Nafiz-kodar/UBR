@@ -1,46 +1,4 @@
 from django.shortcuts import render, redirect
-<<<<<<< HEAD
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
-from django.contrib import messages
-from .models import CustomUser, Property, InspectionRequest, Report
-
-
-# Authentication Views
-def signup_view(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        nid = request.POST.get('nid')
-        phone = request.POST.get('phone')
-        user_type = request.POST.get('user_type')
-        password = request.POST.get('password')
-        
-        # Validation
-        if CustomUser.objects.filter(email=email).exists():
-            messages.error(request, 'Email already exists')
-            return render(request, 'signup.html', {'email': email})
-        
-        if CustomUser.objects.filter(nid=nid).exists():
-            messages.error(request, 'NID already registered')
-            return render(request, 'signup.html', {'email': email})
-        
-        # Create user
-        user = CustomUser.objects.create(
-            name=name,
-            email=email,
-            nid=nid,
-            phone=phone,
-            user_type=user_type,
-            password=make_password(password)
-        )
-        
-        messages.success(request, 'Account created successfully! Please login.')
-        return redirect('login')
-    
-    return render(request, 'signup.html')
-=======
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -83,200 +41,9 @@ def signup(request):
         form = SignUpForm()
 
     return render(request, 'registration/signup.html', {'form': form})
->>>>>>> sadi
 
 
-def login_view(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        remember_me = request.POST.get('remember_me')
-        
-        user = authenticate(request, username=email, password=password)
-        
-        if user is not None:
-            login(request, user)
-            
-            # Handle remember me
-            if not remember_me:
-                request.session.set_expiry(0)
-            
-            # Redirect based on user type
-            if user.user_type == 'owner':
-                return redirect('owner_dashboard')
-            elif user.user_type == 'inspector':
-                return redirect('inspector_dashboard')
-            elif user.user_type == 'admin':
-                return redirect('admin_dashboard')
-        else:
-            return render(request, 'login.html', {
-                'error': 'Invalid email or password',
-                'email': email
-            })
-    
-    return render(request, 'login.html')
-
-
-@login_required
-def logout_view(request):
-    logout(request)
-    messages.success(request, 'You have been logged out successfully.')
-    return redirect('login')
-
-
-# Dashboard Views
-@login_required
-def owner_dashboard(request):
-    if request.user.user_type != 'owner':
-        messages.error(request, 'Access denied. Owners only.')
-        return redirect('login')
-    
-    properties = Property.objects.filter(owner=request.user)
-    inspection_requests = InspectionRequest.objects.all()  # Adjust query as needed
-    
-    context = {
-        'user': request.user,
-        'total_properties': properties.count(),
-        'active_inspections': inspection_requests.count(),  # Adjust based on your logic
-        'pending_actions': inspection_requests.filter(req_type='pending').count() if inspection_requests else 0,
-        'documents': 0,
-    }
-    return render(request, 'owner_dashboard.html', context)
-
-
-@login_required
-def inspector_dashboard(request):
-    if request.user.user_type != 'inspector':
-        messages.error(request, 'Access denied. Inspectors only.')
-        return redirect('login')
-    
-    # Get inspection requests assigned to this inspector
-    # You'll need to adjust this based on your Assigns model logic
-    inspection_requests = InspectionRequest.objects.all()  # Placeholder
-    
-    context = {
-        'user': request.user,
-        'total_inspections': inspection_requests.count(),
-        'pending_inspections': inspection_requests.filter(req_type='pending').count() if inspection_requests else 0,
-        'in_progress': 0,  # Adjust based on your req_type values
-        'completed': 0,    # Adjust based on your req_type values
-        'inspections': inspection_requests[:10],
-    }
-    return render(request, 'inspector_dashboard.html', context)
-
-
-@login_required
-def admin_dashboard(request):
-    if request.user.user_type != 'admin':
-        messages.error(request, 'Access denied. Admins only.')
-        return redirect('login')
-    
-    context = {
-        'user': request.user,
-        'total_users': CustomUser.objects.count(),
-        'total_properties': Property.objects.count(),
-        'total_inspections': InspectionRequest.objects.count(),
-        'inspectors': CustomUser.objects.filter(user_type='inspector').count(),
-        'owners': CustomUser.objects.filter(user_type='owner').count(),
-        'recent_users': CustomUser.objects.order_by('-u_id')[:5],
-        'recent_properties': Property.objects.order_by('-p_id')[:5],
-    }
-    return render(request, 'admin_dashboard.html', context)
-
-
-# Property Views
-@login_required
-def my_properties(request):
-    if request.user.user_type != 'owner':
-        messages.error(request, 'Access denied. Owners only.')
-        return redirect('login')
-    
-    properties = Property.objects.filter(owner=request.user).order_by('-p_id')
-    
-    context = {
-        'user': request.user,
-        'properties': properties,
-    }
-    return render(request, 'my_properties.html', context)
-
-
-@login_required
-def add_property(request):
-    if request.user.user_type != 'owner':
-        messages.error(request, 'Access denied. Owners only.')
-        return redirect('login')
-    
-    if request.method == 'POST':
-        property_type = request.POST.get('property_type')
-        location = request.POST.get('location')
-        
-        if not property_type or not location:
-            messages.error(request, 'All fields are required.')
-            return render(request, 'add_property.html')
-        
-        Property.objects.create(
-            type=property_type,
-            locations=location,
-            owner=request.user
-        )
-        
-        messages.success(request, 'Property added successfully!')
-        return redirect('my_properties')
-    
-    return render(request, 'add_property.html')
-
-
-@login_required
-def property_detail(request, p_id):
-    try:
-        property_obj = Property.objects.get(p_id=p_id)
-        
-        # Check permissions
-        if request.user.user_type == 'owner' and property_obj.owner != request.user:
-            messages.error(request, 'You do not have permission to view this property.')
-            return redirect('my_properties')
-        
-        context = {
-            'user': request.user,
-            'property': property_obj,
-        }
-        return render(request, 'property_detail.html', context)
-    
-    except Property.DoesNotExist:
-        messages.error(request, 'Property not found.')
-        return redirect('my_properties')
-
-
-@login_required
-def delete_property(request, p_id):
-    if request.user.user_type != 'owner':
-        messages.error(request, 'Access denied.')
-        return redirect('login')
-    
-    try:
-        property_obj = Property.objects.get(p_id=p_id, owner=request.user)
-        property_obj.delete()
-        messages.success(request, 'Property deleted successfully.')
-    except Property.DoesNotExist:
-        messages.error(request, 'Property not found or you do not have permission.')
-    
-    return redirect('my_properties')
-
-
-# Home/Landing Page
 def home(request):
-<<<<<<< HEAD
-    if request.user.is_authenticated:
-        # Redirect to appropriate dashboard based on user type
-        if request.user.user_type == 'owner':
-            return redirect('owner_dashboard')
-        elif request.user.user_type == 'inspector':
-            return redirect('inspector_dashboard')
-        elif request.user.user_type == 'admin':
-            return redirect('admin_dashboard')
-    
-    return redirect('login')
-=======
     """
     Simple home page view.
     """
@@ -369,6 +136,11 @@ from django.shortcuts import redirect
 def custom_logout(request):
     logout(request)
     return redirect('home')
+
+
+def banned_view(request):
+    """Simple banned page shown after a user is logged out for being banned."""
+    return render(request, 'banned.html')
 
 
 @login_required
@@ -674,4 +446,3 @@ def download_report(request, pk):
     resp = HttpResponse(content, content_type='text/plain; charset=utf-8')
     resp['Content-Disposition'] = f'attachment; filename=inspection_report_{report.pk}.txt'
     return resp
->>>>>>> sadi

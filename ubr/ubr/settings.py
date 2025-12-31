@@ -160,6 +160,7 @@ LOGOUT_REDIRECT_URL = '/login/'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 SESSION_SAVE_EVERY_REQUEST = False
 
+<<<<<<< HEAD
 # Message tags for Bootstrap compatibility
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
@@ -169,3 +170,81 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'danger',
 }
+=======
+WSGI_APPLICATION = 'ubr.wsgi.application'
+
+
+# Database
+# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'ubr',  
+#         'USER': 'ubr_user',
+#         'PASSWORD': 'ubr_nsm123',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#     }
+# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'property_inspection_db',
+        'USER': 'root',
+        'PASSWORD': '12345@@',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
+
+
+
+# Password validation
+# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+
+# Internationalization
+# https://docs.djangoproject.com/en/6.0/topics/i18n/
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'UTC'
+
+USE_I18N = True
+
+USE_TZ = True
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/6.0/howto/static-files/
+
+STATIC_URL = 'static/'
+
+# Serve project-level static files during development
+# The repository has a top-level `static/` folder at the repo root (one level above BASE_DIR).
+# Use BASE_DIR.parent to point to that directory so runserver can find `/static/css/style.css`.
+STATICFILES_DIRS = [BASE_DIR.parent / "static"]
+
+
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/'
+# Default primary key type for models
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# End of settings.py
+>>>>>>> sadi
